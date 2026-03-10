@@ -1,0 +1,1640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemeCoin Hunter | Early Alpha Screener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES — crypto terminal palette
+   ============================================================ */
+:root {
+  --bg-0: #020303;
+  --bg-1: #060808;
+  --bg-2: #0a0d0a;
+  --bg-card: #0c0f0c;
+  --bg-sidebar: #080b08;
+
+  --border-0: #111811;
+  --border-1: #172017;
+  --border-accent: rgba(0,255,136,0.15);
+
+  --green-1: #00ff88;
+  --green-2: #00cc6a;
+  --green-3: #007a3f;
+  --green-4: #003a1e;
+  --green-glow: 0 0 24px rgba(0,255,136,0.25);
+
+  --amber-1: #ffb300;
+  --amber-2: #cc8e00;
+  --amber-3: #7a5500;
+  --amber-glow: 0 0 24px rgba(255,179,0,0.25);
+
+  --red-1: #ff3c3c;
+  --red-2: #cc2222;
+  --red-glow: 0 0 24px rgba(255,60,60,0.2);
+
+  --txt-0: #d4ffd4;
+  --txt-1: #80aa80;
+  --txt-2: #3a5a3a;
+  --txt-3: #1e2e1e;
+
+  --mono: 'Share Tech Mono', 'Courier New', monospace;
+  --display: 'Orbitron', monospace;
+
+  --nav-h: 58px;
+  --sidebar-w: 252px;
+  --r: 3px;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg-0);
+  color: var(--txt-0);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   SCANLINES & GRID ATMOSPHERE
+   ============================================================ */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,255,136,0.012) 3px,
+    rgba(0,255,136,0.012) 4px
+  );
+  pointer-events:none;
+  z-index:9999;
+}
+
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,255,136,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,136,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width:3px; height:3px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb { background: var(--green-4); border-radius:2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--green-3); }
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+  position:fixed; top:0; left:0; right:0;
+  height: var(--nav-h);
+  background: rgba(2,3,3,0.97);
+  border-bottom: 1px solid var(--border-1);
+  display:flex; align-items:center;
+  padding: 0 16px; gap:14px;
+  z-index:200;
+  backdrop-filter: blur(12px);
+}
+
+.nav-brand {
+  display:flex; align-items:center; gap:10px;
+  text-decoration:none; flex-shrink:0;
+}
+
+.nav-logo {
+  width:34px; height:34px;
+  background: radial-gradient(circle, #00ff88 0%, #007a3f 100%);
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px;
+  box-shadow: var(--green-glow);
+  animation: logo-pulse 3s ease-in-out infinite;
+  flex-shrink:0;
+}
+
+@keyframes logo-pulse {
+  0%,100% { box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+  50%      { box-shadow: 0 0 28px rgba(0,255,136,0.7), 0 0 60px rgba(0,255,136,0.2); }
+}
+
+.nav-wordmark { display:flex; flex-direction:column; }
+.nav-title {
+  font-family: var(--display);
+  font-size:13px; font-weight:900;
+  color: var(--green-1);
+  letter-spacing:3px; text-transform:uppercase;
+  line-height:1.1;
+}
+.nav-sub {
+  font-size:9px; color: var(--txt-2);
+  letter-spacing:2px; text-transform:uppercase;
+}
+
+/* Terminal cursor blink after title */
+.nav-title::after {
+  content:'_';
+  animation: blink 1s step-end infinite;
+  color: var(--green-1);
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.nav-search {
+  flex:1; max-width:380px; position:relative;
+}
+.nav-search input {
+  width:100%;
+  background: var(--bg-1);
+  border:1px solid var(--border-1);
+  color: var(--txt-0);
+  font-family: var(--mono);
+  font-size:12px;
+  padding: 8px 12px 8px 34px;
+  border-radius: var(--r);
+  outline:none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  letter-spacing:0.5px;
+}
+.nav-search input:focus {
+  border-color: var(--green-3);
+  box-shadow: 0 0 12px rgba(0,255,136,0.12);
+}
+.nav-search input::placeholder { color: var(--txt-2); }
+.search-icon {
+  position:absolute; left:10px; top:50%;
+  transform:translateY(-50%);
+  color: var(--txt-2); font-size:15px;
+  pointer-events:none;
+}
+
+.nav-meta {
+  display:flex; align-items:center; gap:16px; margin-left:auto;
+}
+.nav-stat {
+  display:flex; flex-direction:column; align-items:flex-end; gap:1px;
+}
+.nav-stat .lbl { font-size:9px; color: var(--txt-2); letter-spacing:1.5px; }
+.nav-stat .val { font-size:11px; color: var(--amber-1); font-weight:bold; }
+
+.btn {
+  background:transparent;
+  border:1px solid var(--border-1);
+  color: var(--txt-1);
+  font-family: var(--mono);
+  font-size:11px;
+  padding: 7px 14px;
+  border-radius: var(--r);
+  cursor:pointer;
+  transition: all 0.15s;
+  display:flex; align-items:center; gap:6px;
+  letter-spacing:1px; text-transform:uppercase;
+  white-space:nowrap;
+}
+.btn:hover { border-color: var(--green-2); color: var(--green-1); box-shadow: var(--green-glow); }
+.btn-primary {
+  background: var(--green-4);
+  border-color: var(--green-3);
+  color: var(--green-1);
+}
+.btn-primary:hover { background: #004a26; }
+.btn.is-spinning .spin-icon { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.layout {
+  display:flex;
+  margin-top: var(--nav-h);
+  min-height: calc(100vh - var(--nav-h));
+  position:relative; z-index:1;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-0);
+  padding: 18px 14px;
+  position:sticky; top: var(--nav-h);
+  height: calc(100vh - var(--nav-h));
+  overflow-y:auto; flex-shrink:0;
+}
+
+.fsect { margin-bottom:22px; }
+
+.fsect-title {
+  font-size:9px; color: var(--amber-1);
+  letter-spacing:2.5px; text-transform:uppercase;
+  margin-bottom:9px;
+  display:flex; align-items:center; gap:6px;
+}
+.fsect-title::after {
+  content:''; flex:1; height:1px;
+  background: var(--border-0);
+}
+
+.fgroup { display:flex; flex-direction:column; gap:3px; }
+
+.fbtn {
+  background:transparent;
+  border:1px solid transparent;
+  color: var(--txt-1);
+  font-family: var(--mono);
+  font-size:11px;
+  padding: 6px 9px;
+  border-radius: var(--r);
+  cursor:pointer; text-align:left;
+  transition: all 0.12s;
+  display:flex; align-items:center; gap:8px;
+  letter-spacing:0.5px;
+}
+.fbtn:hover { background: var(--bg-card); color: var(--txt-0); border-color: var(--border-1); }
+.fbtn.active { background: var(--green-4); border-color: var(--green-3); color: var(--green-1); }
+.fbtn .dot {
+  width:5px; height:5px; border-radius:50%;
+  background: var(--txt-3); flex-shrink:0;
+  transition: all 0.12s;
+}
+.fbtn.active .dot { background: var(--green-1); box-shadow: 0 0 5px var(--green-1); }
+
+/* Moonshot toggle */
+.moonshot-wrap { margin-bottom:22px; }
+.moonshot-btn {
+  width:100%;
+  background: var(--bg-card);
+  border:1px solid var(--border-1);
+  color: var(--txt-1);
+  font-family: var(--mono);
+  font-size:11px;
+  padding:11px 12px;
+  border-radius: var(--r);
+  cursor:pointer;
+  display:flex; align-items:center; gap:10px;
+  transition: all 0.2s;
+}
+.moonshot-btn.active {
+  background: rgba(255,179,0,0.07);
+  border-color: var(--amber-2);
+  color: var(--amber-1);
+  box-shadow: var(--amber-glow);
+}
+.moonshot-btn .moon-icon { font-size:20px; flex-shrink:0; }
+.moonshot-btn .moon-text { flex:1; text-align:left; }
+.moonshot-btn .moon-text .moon-label { font-size:11px; letter-spacing:0.5px; }
+.moonshot-btn .moon-text .moon-desc {
+  font-size:9px; color: var(--txt-2); margin-top:2px;
+  letter-spacing:0.3px;
+}
+.moonshot-btn.active .moon-text .moon-desc { color: var(--amber-3); }
+
+.sw {
+  width:32px; height:17px;
+  background: var(--bg-0);
+  border:1px solid var(--border-1);
+  border-radius:9px; position:relative;
+  transition: all 0.2s; flex-shrink:0;
+}
+.sw::after {
+  content:''; position:absolute;
+  top:2px; left:2px;
+  width:11px; height:11px; border-radius:50%;
+  background: var(--txt-2);
+  transition: all 0.2s;
+}
+.moonshot-btn.active .sw { background: rgba(255,179,0,0.15); border-color: var(--amber-1); }
+.moonshot-btn.active .sw::after { transform:translateX(15px); background: var(--amber-1); box-shadow:0 0 5px var(--amber-1); }
+
+/* Sort */
+.sort-sel {
+  width:100%;
+  background: var(--bg-card);
+  border:1px solid var(--border-1);
+  color: var(--txt-0);
+  font-family: var(--mono);
+  font-size:11px;
+  padding: 7px 28px 7px 10px;
+  border-radius: var(--r);
+  outline:none; cursor:pointer; appearance:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24'%3E%3Cpath fill='%2300cc6a' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position: right 9px center;
+  letter-spacing:0.5px;
+}
+.sort-sel:focus { border-color: var(--green-3); }
+.sort-sel option { background: var(--bg-1); }
+
+/* Chain pills */
+.chain-pills { display:flex; flex-wrap:wrap; gap:4px; }
+.chain-pill {
+  background: var(--bg-card);
+  border:1px solid var(--border-1);
+  color: var(--txt-1);
+  font-family: var(--mono);
+  font-size:10px;
+  padding: 4px 10px;
+  border-radius: var(--r);
+  cursor:pointer;
+  transition: all 0.12s;
+  letter-spacing:0.5px;
+}
+.chain-pill.active { background: var(--green-4); border-color: var(--green-3); color: var(--green-1); }
+
+/* Reset btn */
+.reset-btn {
+  width:100%; margin-top:6px;
+  background:transparent;
+  border:1px solid rgba(255,60,60,0.3);
+  color: var(--red-1);
+  font-family: var(--mono);
+  font-size:10px;
+  padding: 7px;
+  border-radius: var(--r);
+  cursor:pointer; transition: all 0.15s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  letter-spacing:1px;
+}
+.reset-btn:hover { background: rgba(255,60,60,0.08); }
+
+/* ============================================================
+   MAIN PANEL
+   ============================================================ */
+.main {
+  flex:1; padding:18px;
+  overflow-y:auto; min-width:0;
+}
+
+/* Mobile filter bar */
+.mobile-filter-bar { display:none; }
+.mobile-ftoggle {
+  width:100%;
+  background: var(--bg-card);
+  border:1px solid var(--border-1);
+  color: var(--txt-0);
+  font-family: var(--mono);
+  font-size:12px;
+  padding: 11px 14px;
+  border-radius: var(--r);
+  cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px;
+  transition: border-color 0.2s;
+  letter-spacing:0.5px;
+}
+.mobile-ftoggle:hover { border-color: var(--green-3); }
+.mobile-ftoggle .chevron { transition: transform 0.3s; }
+.mobile-ftoggle.open .chevron { transform: rotate(180deg); }
+
+.mobile-sidebar {
+  background: var(--bg-sidebar);
+  border:1px solid var(--border-0);
+  border-radius: var(--r);
+  overflow:hidden;
+  max-height:0;
+  transition: max-height 0.4s ease;
+  margin-bottom:12px;
+}
+.mobile-sidebar.open { max-height:900px; }
+.mobile-sidebar-inner { padding:14px; }
+
+/* Stats row */
+.stats-row {
+  display:flex; gap:10px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.stat-chip {
+  background: var(--bg-card);
+  border:1px solid var(--border-0);
+  border-radius: var(--r);
+  padding: 7px 12px;
+  display:flex; align-items:center; gap:8px;
+  font-size:11px;
+  flex:1; min-width:100px;
+}
+.stat-chip .sc-lbl { color: var(--txt-2); letter-spacing:1px; }
+.stat-chip .sc-val { color: var(--green-1); font-weight:bold; margin-left:auto; }
+.stat-chip.amber .sc-val { color: var(--amber-1); }
+
+/* Tabs */
+.tabs {
+  display:flex; gap:0;
+  border-bottom:1px solid var(--border-0);
+  margin-bottom:16px;
+}
+.tab {
+  background:transparent;
+  border:none; border-bottom:2px solid transparent;
+  color: var(--txt-2);
+  font-family: var(--mono);
+  font-size:10px;
+  padding: 9px 14px;
+  cursor:pointer;
+  transition: all 0.15s;
+  display:flex; align-items:center; gap:6px;
+  letter-spacing:1.5px; text-transform:uppercase;
+  margin-bottom:-1px;
+}
+.tab:hover { color: var(--txt-0); }
+.tab.active { color: var(--green-1); border-bottom-color: var(--green-1); }
+.tab-count {
+  background: var(--green-4);
+  color: var(--green-1);
+  font-size:9px;
+  padding: 1px 6px; border-radius:9px;
+  min-width:18px; text-align:center;
+}
+.tab.active .tab-count { background: var(--green-3); }
+
+/* ============================================================
+   COIN GRID
+   ============================================================ */
+.coins-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
+  gap:10px;
+}
+
+/* ============================================================
+   COIN CARD
+   ============================================================ */
+.coin-card {
+  background: var(--bg-card);
+  border:1px solid var(--border-0);
+  border-radius: var(--r);
+  padding:14px;
+  position:relative; overflow:hidden;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  animation: card-in 0.35s ease both;
+}
+
+.coin-card:nth-child(2)  { animation-delay: 0.03s; }
+.coin-card:nth-child(3)  { animation-delay: 0.06s; }
+.coin-card:nth-child(4)  { animation-delay: 0.09s; }
+.coin-card:nth-child(5)  { animation-delay: 0.12s; }
+.coin-card:nth-child(6)  { animation-delay: 0.15s; }
+
+@keyframes card-in {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* Top accent line */
+.coin-card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--green-4), transparent);
+  transition: background 0.3s;
+}
+.coin-card:hover {
+  border-color: rgba(0,255,136,0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0,255,136,0.06);
+}
+.coin-card:hover::before {
+  background: linear-gradient(90deg, transparent, var(--green-2) 40%, var(--green-2) 60%, transparent);
+}
+
+/* Card top: logo + name + chain */
+.card-top {
+  display:flex; align-items:center; gap:11px;
+  margin-bottom:12px;
+}
+
+.token-logo {
+  width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--border-1);
+  background: var(--bg-1);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; color: var(--txt-2);
+  overflow:hidden; flex-shrink:0;
+}
+.token-logo img {
+  width:100%; height:100%;
+  border-radius:50%; object-fit:cover;
+}
+
+.token-id { flex:1; min-width:0; }
+.token-name {
+  font-family: var(--display);
+  font-size:12px; font-weight:700;
+  color: var(--txt-0); letter-spacing:0.5px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.token-sym {
+  font-size:10px; color: var(--amber-1); letter-spacing:1px;
+  margin-top:2px;
+}
+
+.card-badges {
+  display:flex; flex-direction:column;
+  align-items:flex-end; gap:3px; flex-shrink:0;
+}
+
+.chain-badge {
+  font-size:9px; padding: 2px 7px;
+  border-radius:2px; border:1px solid;
+  letter-spacing:0.5px; text-transform:uppercase; font-weight:bold;
+}
+.cb-solana   { color:#b574ff; border-color:rgba(181,116,255,0.3); background:rgba(181,116,255,0.07); }
+.cb-ethereum { color:#7b9cf7; border-color:rgba(123,156,247,0.3); background:rgba(123,156,247,0.07); }
+.cb-base     { color:#4d82ff; border-color:rgba(77,130,255,0.3);  background:rgba(77,130,255,0.07); }
+.cb-bsc      { color:#f5c842; border-color:rgba(245,200,66,0.3);  background:rgba(245,200,66,0.07); }
+.cb-other    { color:var(--txt-1); border-color:var(--border-1);  background:transparent; }
+
+.boost-badge {
+  font-size:9px; padding:2px 6px;
+  border-radius:2px;
+  background: rgba(255,179,0,0.1);
+  border:1px solid rgba(255,179,0,0.3);
+  color: var(--amber-1); letter-spacing:0.5px;
+}
+
+/* Price + age row */
+.price-row {
+  display:flex; justify-content:space-between;
+  align-items:flex-end; margin-bottom:11px;
+}
+.price-main {
+  font-family: var(--display);
+  font-size:17px; font-weight:700;
+  color: var(--txt-0);
+  letter-spacing:0.5px;
+}
+.price-change { font-size:10px; margin-top:2px; }
+.price-change.up   { color: var(--green-1); }
+.price-change.down { color: var(--red-1); }
+
+.age-label {
+  font-size:10px; color: var(--txt-2);
+  display:flex; align-items:center; gap:4px;
+}
+
+/* Metrics grid */
+.metrics {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:6px; margin-bottom:11px;
+}
+.metric {
+  background: var(--bg-1);
+  border:1px solid var(--border-0);
+  border-radius: var(--r);
+  padding: 7px 9px;
+}
+.metric .mlbl {
+  font-size:8px; color: var(--txt-2);
+  letter-spacing:1.5px; text-transform:uppercase;
+  margin-bottom:3px;
+}
+.metric .mval {
+  font-size:12px; color: var(--txt-0);
+  font-weight:bold;
+}
+.mval.g { color: var(--green-1); }
+.mval.a { color: var(--amber-1); }
+.mval.r { color: var(--red-1); }
+
+/* Signals */
+.signals {
+  display:flex; flex-wrap:wrap; gap:4px;
+  margin-bottom:11px;
+}
+.sig {
+  font-size:9px; padding:3px 7px;
+  border-radius:2px; border:1px solid transparent;
+  letter-spacing:0.3px; display:flex; align-items:center; gap:3px;
+}
+.sig-g { color:var(--green-1); border-color:var(--green-4); background:rgba(0,255,136,0.05); }
+.sig-a { color:var(--amber-1); border-color:rgba(255,179,0,0.25); background:rgba(255,179,0,0.05); }
+.sig-r { color:var(--red-1);   border-color:rgba(255,60,60,0.25);  background:rgba(255,60,60,0.05); }
+
+/* Meme Score */
+.score-wrap {
+  background: var(--bg-1);
+  border:1px solid var(--border-0);
+  border-radius: var(--r);
+  padding: 9px 10px;
+  margin-bottom:11px;
+}
+.score-top {
+  display:flex; justify-content:space-between;
+  align-items:center; margin-bottom:6px;
+}
+.score-lbl {
+  font-size:9px; color: var(--txt-2);
+  letter-spacing:2px; text-transform:uppercase;
+}
+.score-num {
+  font-family: var(--display);
+  font-size:20px; font-weight:900;
+}
+.score-num .denom {
+  font-size:11px; opacity:0.5;
+}
+.score-bar {
+  height:3px; background: var(--bg-0);
+  border-radius:2px; overflow:hidden; margin-bottom:5px;
+}
+.score-fill {
+  height:100%; border-radius:2px;
+  transition: width 0.7s cubic-bezier(0.16,1,0.3,1);
+}
+.sf-high { background: var(--green-1); box-shadow:0 0 8px var(--green-1); }
+.sf-mid  { background: var(--amber-1); box-shadow:0 0 8px var(--amber-1); }
+.sf-low  { background: var(--red-1);   box-shadow:0 0 8px var(--red-1); }
+
+.score-tag {
+  font-size:9px; letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* Action buttons */
+.card-actions {
+  display:flex; gap:5px;
+}
+.act-btn {
+  flex:1;
+  background:transparent;
+  border:1px solid var(--border-1);
+  color: var(--txt-1);
+  font-family: var(--mono);
+  font-size:9px;
+  padding: 6px 4px;
+  border-radius: var(--r);
+  cursor:pointer;
+  display:flex; align-items:center;
+  justify-content:center; gap:3px;
+  text-decoration:none;
+  letter-spacing:0.5px; text-transform:uppercase;
+  white-space:nowrap;
+  transition: all 0.12s;
+}
+.act-btn:hover { border-color: var(--green-2); color: var(--green-1); }
+.act-btn.copy:hover { border-color: var(--amber-2); color: var(--amber-1); }
+.act-btn.copied { border-color: var(--green-3); color: var(--green-1); }
+
+/* ============================================================
+   LOADING / EMPTY STATES
+   ============================================================ */
+.state-box {
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding: 70px 20px; gap:14px;
+  color: var(--txt-2);
+}
+.spinner {
+  width:38px; height:38px;
+  border:2px solid var(--border-1);
+  border-top-color: var(--green-1);
+  border-radius:50%;
+  animation: spin 0.75s linear infinite;
+}
+.state-box p {
+  font-size:12px; letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.state-box .sub {
+  font-size:10px; color: var(--txt-3); margin-top:-6px;
+}
+.progress-bar {
+  width:200px; height:2px;
+  background: var(--border-0);
+  border-radius:1px; overflow:hidden;
+}
+.progress-fill {
+  height:100%; background: var(--green-1);
+  border-radius:1px;
+  animation: progress-anim 3s ease-in-out infinite;
+}
+@keyframes progress-anim {
+  0%   { width:0%; margin-left:0%; }
+  50%  { width:60%; margin-left:20%; }
+  100% { width:0%; margin-left:100%; }
+}
+
+.empty-icon {
+  font-size:40px; color: var(--green-4);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toasts {
+  position:fixed; bottom:18px; right:18px;
+  z-index:9000;
+  display:flex; flex-direction:column; gap:7px;
+}
+.toast {
+  background: var(--bg-card);
+  border:1px solid var(--green-3);
+  color: var(--green-1);
+  font-family: var(--mono);
+  font-size:11px;
+  padding: 9px 14px;
+  border-radius: var(--r);
+  display:flex; align-items:center; gap:7px;
+  animation: toast-in 0.3s ease, toast-out 0.3s ease 2.7s forwards;
+  box-shadow: var(--green-glow);
+  max-width:280px; letter-spacing:0.5px;
+}
+.toast.err { border-color: var(--red-2); color: var(--red-1); box-shadow: var(--red-glow); }
+.toast.warn { border-color: var(--amber-2); color: var(--amber-1); box-shadow: var(--amber-glow); }
+@keyframes toast-in  { from { transform:translateX(110%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes toast-out { from { transform:translateX(0); opacity:1; } to { transform:translateX(110%); opacity:0; } }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width:900px) {
+  .sidebar { display:none; }
+  .mobile-filter-bar { display:block; }
+  .coins-grid { grid-template-columns:1fr; }
+  .nav-stat { display:none; }
+}
+@media (max-width:600px) {
+  .main { padding:10px; }
+  .nav-title { font-size:11px; letter-spacing:1.5px; }
+  .nav-title::after { display:none; }
+  .stats-row .stat-chip .sc-lbl { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar">
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">🎯</div>
+    <div class="nav-wordmark">
+      <div class="nav-title">MemeCoin Hunter</div>
+      <div class="nav-sub">EARLY ALPHA SCREENER</div>
+    </div>
+  </a>
+
+  <div class="nav-search">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search token name, symbol, address...">
+  </div>
+
+  <div class="nav-meta">
+    <div class="nav-stat">
+      <span class="lbl">TRACKING</span>
+      <span class="val" id="navCount">— TOKENS</span>
+    </div>
+    <div class="nav-stat">
+      <span class="lbl">LAST SCAN</span>
+      <span class="val" id="navTime">--:--:--</span>
+    </div>
+    <button class="btn btn-primary" id="refreshBtn" onclick="App.refresh()">
+      <span class="spin-icon">↺</span>
+      <span id="refreshLabel">SCAN</span>
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST CONTAINER -->
+<div id="toasts"></div>
+
+<!-- ============================================================
+     LAYOUT
+     ============================================================ -->
+<div class="layout">
+
+  <!-- DESKTOP SIDEBAR -->
+  <aside class="sidebar" id="desktopSidebar"></aside>
+
+  <!-- MAIN PANEL -->
+  <main class="main">
+
+    <!-- MOBILE FILTERS -->
+    <div class="mobile-filter-bar">
+      <button class="mobile-ftoggle" id="mobileToggle" onclick="App.toggleMobile()">
+        <span>⚙ FILTERS &amp; SORT</span>
+        <span class="chevron">▾</span>
+      </button>
+      <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="mobile-sidebar-inner" id="mobileSidebarInner"></div>
+      </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <span>🪙</span>
+        <span class="sc-lbl">COINS</span>
+        <span class="sc-val" id="stCoins">0</span>
+      </div>
+      <div class="stat-chip amber">
+        <span>🔥</span>
+        <span class="sc-lbl">TRENDING</span>
+        <span class="sc-val" id="stTrend">0</span>
+      </div>
+      <div class="stat-chip">
+        <span>🚀</span>
+        <span class="sc-lbl">NEW &lt;12H</span>
+        <span class="sc-val" id="stNew">0</span>
+      </div>
+      <div class="stat-chip amber">
+        <span>⭐</span>
+        <span class="sc-lbl">TOP SCORE</span>
+        <span class="sc-val" id="stTop">—</span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" data-tab="all" onclick="App.setTab('all')">
+        ◈ ALL <span class="tab-count" id="tcAll">0</span>
+      </button>
+      <button class="tab" data-tab="trending" onclick="App.setTab('trending')">
+        🔥 TRENDING <span class="tab-count" id="tcTrend">0</span>
+      </button>
+      <button class="tab" data-tab="new" onclick="App.setTab('new')">
+        🚀 NEW LAUNCHES <span class="tab-count" id="tcNew">0</span>
+      </button>
+    </div>
+
+    <!-- COINS OUTPUT -->
+    <div id="coinsOut">
+      <div class="state-box">
+        <div class="spinner"></div>
+        <p>INITIALISING SCANNER</p>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT — ALL LOGIC
+     ============================================================ -->
+<script>
+'use strict';
+
+/* ============================================================
+   CONFIG
+   Swap API endpoints here — no other changes needed
+   ============================================================ */
+const CFG = {
+  // DexScreener public API (free, CORS-enabled, no key required)
+  DS_SEARCH:   'https://api.dexscreener.com/latest/dex/search?q=',
+  DS_BOOSTS:   'https://api.dexscreener.com/token-boosts/latest/v1',
+  DS_TOKENS:   'https://api.dexscreener.com/latest/dex/tokens/',
+
+  // Keywords to find meme coins
+  KEYWORDS: ['meme sol','pepe','wojak','bonk','inu','moon sol','doge','cat sol','frog','shib','pump fun'],
+
+  // Max pairs returned per keyword search
+  PER_SEARCH: 6,
+
+  // Min liquidity USD to include (removes dead/spam coins)
+  MIN_LIQ: 1500,
+
+  // Min price to include
+  MIN_PRICE: 0.000000001,
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const S = {
+  all:      [],     // All enriched coins
+  filtered: [],     // After filters
+  tab:      'all',
+  loading:  false,
+  lastScan: null,
+  filters: {
+    marketCap: null,   // 'u100k' | 'u500k' | 'u1m'
+    liquidity: null,   // '10k' | '50k' | '100k'
+    age:       null,   // '1h' | '24h' | '7d'
+    volume:    null,   // '10k' | '50k' | '100k'
+    chains:  new Set(),
+    moonshot:  false,
+    query:     '',
+    sort:      'score',
+  },
+};
+
+/* ============================================================
+   API MODULE
+   To swap: replace fetchAll() body — keep return shape the same
+   ============================================================ */
+const API = {
+
+  async fetchAll() {
+    const out = [];
+    const seen = new Set();
+
+    /* — 1. BOOSTED / TRENDING TOKENS — */
+    try {
+      const boosts = await this._json(CFG.DS_BOOSTS);
+      if (Array.isArray(boosts)) {
+        // Group token addresses by chain
+        const byChain = {};
+        boosts.slice(0, 40).forEach(b => {
+          if (!byChain[b.chainId]) byChain[b.chainId] = [];
+          byChain[b.chainId].push(b.tokenAddress);
+        });
+
+        // Fetch pair data for each batch
+        await Promise.allSettled(
+          Object.entries(byChain).map(async ([, addrs]) => {
+            const batch = addrs.slice(0, 10).join(',');
+            try {
+              const d = await this._json(CFG.DS_TOKENS + batch);
+              (d.pairs || []).forEach(p => {
+                const k = p.chainId + '-' + p.pairAddress;
+                if (!seen.has(k)) { seen.add(k); out.push(this.norm(p)); }
+              });
+            } catch {}
+          })
+        );
+      }
+    } catch (e) { console.warn('[API] Boosts failed:', e.message); }
+
+    /* — 2. KEYWORD SEARCHES — */
+    await Promise.allSettled(
+      CFG.KEYWORDS.map(kw =>
+        this._json(CFG.DS_SEARCH + encodeURIComponent(kw))
+          .then(d => {
+            (d.pairs || []).slice(0, CFG.PER_SEARCH).forEach(p => {
+              const k = p.chainId + '-' + p.pairAddress;
+              if (!seen.has(k)) { seen.add(k); out.push(this.norm(p)); }
+            });
+          })
+          .catch(() => {})
+      )
+    );
+
+    /* — QUALITY FILTER — */
+    return out.filter(c => c.liquidity >= CFG.MIN_LIQ && c.price >= CFG.MIN_PRICE);
+  },
+
+  /**
+   * norm() — maps DexScreener pair → internal coin shape
+   * Update field paths here if switching to another API
+   */
+  norm(p) {
+    const now  = Date.now();
+    const born = p.pairCreatedAt || (now - 86_400_000);
+    const ageH = (now - born) / 3_600_000;
+
+    return {
+      id:        p.chainId + '-' + p.pairAddress,
+      name:      p.baseToken?.name    || 'Unknown',
+      sym:       p.baseToken?.symbol  || '???',
+      addr:      p.baseToken?.address || '',
+      pair:      p.pairAddress        || '',
+      chain:     (p.chainId || 'unknown').toLowerCase(),
+      dex:       p.dexId              || '',
+
+      price:     +p.priceUsd          || 0,
+      mcap:      p.marketCap          || p.fdv || 0,
+      liq:       p.liquidity?.usd     || 0,
+      vol24:     p.volume?.h24        || 0,
+      vol6:      p.volume?.h6         || 0,
+      vol1:      p.volume?.h1         || 0,
+      ch24:      p.priceChange?.h24   || 0,
+      ch6:       p.priceChange?.h6    || 0,
+      txns24:    (p.txns?.h24?.buys||0) + (p.txns?.h24?.sells||0),
+      buys24:    p.txns?.h24?.buys    || 0,
+      sells24:   p.txns?.h24?.sells   || 0,
+
+      ageH:      +ageH.toFixed(2),
+      born,
+
+      dexUrl:    p.url || `https://dexscreener.com/${p.chainId}/${p.pairAddress}`,
+      logo:      p.info?.imageUrl     || null,
+      boosted:   !!(p.boosts?.active),
+      boostAmt:  p.boosts?.active     || 0,
+    };
+  },
+
+  async _json(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  },
+};
+
+/* ============================================================
+   SCORE ENGINE
+   ============================================================ */
+const Score = {
+
+  calc(c) {
+    let s = 0;
+
+    /* Liquidity — 0 to 30 */
+    if      (c.liq >= 200_000) s += 30;
+    else if (c.liq >= 100_000) s += 26;
+    else if (c.liq >=  50_000) s += 20;
+    else if (c.liq >=  25_000) s += 14;
+    else if (c.liq >=  10_000) s +=  8;
+    else if (c.liq >=   5_000) s +=  4;
+
+    /* Volume — 0 to 30 */
+    if      (c.vol24 >= 1_000_000) s += 30;
+    else if (c.vol24 >=   500_000) s += 26;
+    else if (c.vol24 >=   100_000) s += 20;
+    else if (c.vol24 >=    50_000) s += 14;
+    else if (c.vol24 >=    10_000) s +=  8;
+    else if (c.vol24 >=     1_000) s +=  4;
+
+    /* Age (newer = more potential) — 0 to 20 */
+    if      (c.ageH <= 1)   s += 20;
+    else if (c.ageH <= 6)   s += 17;
+    else if (c.ageH <= 12)  s += 14;
+    else if (c.ageH <= 24)  s += 11;
+    else if (c.ageH <= 72)  s +=  7;
+    else if (c.ageH <= 168) s +=  3;
+
+    /* Market cap (lower = more upside) — 0 to 20 */
+    if      (c.mcap > 0 && c.mcap <   100_000) s += 20;
+    else if (c.mcap < 500_000)  s += 16;
+    else if (c.mcap < 1_000_000) s += 12;
+    else if (c.mcap < 5_000_000) s +=  7;
+    else if (c.mcap < 10_000_000) s += 3;
+
+    /* Bonus: boosted */
+    if (c.boosted)    s = Math.min(s + 5, 100);
+    /* Bonus: pumping */
+    if (c.ch24 > 100) s = Math.min(s + 5, 100);
+    else if (c.ch24 > 50) s = Math.min(s + 3, 100);
+
+    return Math.round(Math.min(s, 100));
+  },
+
+  label(s) {
+    if (s >= 78) return { text: '🚀 MOONSHOT POTENTIAL', cls: 'sf-high', color: 'var(--green-1)' };
+    if (s >= 58) return { text: '🔥 HIGH POTENTIAL',     cls: 'sf-high', color: 'var(--green-2)' };
+    if (s >= 40) return { text: '👀 WATCH THIS ONE',     cls: 'sf-mid',  color: 'var(--amber-1)' };
+    if (s >= 20) return { text: '❄️ LOW POTENTIAL',      cls: 'sf-low',  color: 'var(--txt-2)'   };
+    return                { text: '💀 AVOID',             cls: 'sf-low',  color: 'var(--red-1)'   };
+  },
+
+  signals(c) {
+    const out = [];
+
+    /* Liquidity */
+    if      (c.liq >= 100_000) out.push({ t:'g', text:'🟢 Strong Liquidity' });
+    else if (c.liq >=  20_000) out.push({ t:'g', text:'🟢 Good Liquidity' });
+    else if (c.liq >=  10_000) out.push({ t:'a', text:'🟡 Low Liquidity' });
+    else                       out.push({ t:'r', text:'🔴 Risky Liquidity' });
+
+    /* Volume momentum */
+    if      (c.vol24 > c.liq * 2)   out.push({ t:'g', text:'🟢 Volume Surge' });
+    else if (c.vol24 > c.liq * 0.3) out.push({ t:'g', text:'🟢 Growing Volume' });
+    else if (c.vol24 > 5_000)        out.push({ t:'a', text:'🟡 Moderate Volume' });
+
+    /* Age */
+    if      (c.ageH <= 1)   out.push({ t:'a', text:'🟡 Ultra New (<1h)' });
+    else if (c.ageH <= 6)   out.push({ t:'g', text:'🟢 Fresh Launch' });
+    else if (c.ageH <= 24)  out.push({ t:'a', text:'🟡 New Launch' });
+
+    /* Price action */
+    if (c.ch24 > 100)       out.push({ t:'g', text:'🚀 +' + c.ch24.toFixed(0) + '% Today' });
+    else if (c.ch24 > 30)   out.push({ t:'g', text:'📈 +' + c.ch24.toFixed(0) + '% Today' });
+    else if (c.ch24 < -40)  out.push({ t:'r', text:'📉 ' + c.ch24.toFixed(0) + '% Today' });
+
+    /* Buy pressure */
+    if (c.txns24 > 0) {
+      const pct = (c.buys24 / c.txns24 * 100).toFixed(0);
+      if (+pct > 60) out.push({ t:'g', text:'🟢 ' + pct + '% Buys' });
+    }
+
+    /* Boost */
+    if (c.boosted) out.push({ t:'a', text:'⚡ Boosted' });
+
+    return out.slice(0, 4);
+  },
+};
+
+/* ============================================================
+   FILTER ENGINE
+   ============================================================ */
+const Filter = {
+  apply(coins) {
+    const f = S.filters;
+    let res = [...coins];
+
+    /* Search */
+    if (f.query) {
+      const q = f.query.toLowerCase();
+      res = res.filter(c =>
+        c.name.toLowerCase().includes(q) ||
+        c.sym.toLowerCase().includes(q)  ||
+        c.addr.toLowerCase().includes(q)
+      );
+    }
+
+    /* Market cap */
+    const mcLimits = { u100k: 100_000, u500k: 500_000, u1m: 1_000_000 };
+    if (f.marketCap && mcLimits[f.marketCap]) {
+      res = res.filter(c => c.mcap > 0 && c.mcap < mcLimits[f.marketCap]);
+    }
+
+    /* Liquidity */
+    const liqMins = { '10k': 10_000, '50k': 50_000, '100k': 100_000 };
+    if (f.liquidity && liqMins[f.liquidity]) {
+      res = res.filter(c => c.liq >= liqMins[f.liquidity]);
+    }
+
+    /* Age */
+    const ageLimits = { '1h': 1, '24h': 24, '7d': 168 };
+    if (f.age && ageLimits[f.age]) {
+      res = res.filter(c => c.ageH <= ageLimits[f.age]);
+    }
+
+    /* Volume */
+    const volMins = { '10k': 10_000, '50k': 50_000, '100k': 100_000 };
+    if (f.volume && volMins[f.volume]) {
+      res = res.filter(c => c.vol24 >= volMins[f.volume]);
+    }
+
+    /* Chain */
+    if (f.chains.size > 0) {
+      res = res.filter(c => f.chains.has(c.chain));
+    }
+
+    /* Moonshot mode */
+    if (f.moonshot) {
+      res = res.filter(c =>
+        c.mcap > 0 && c.mcap < 1_000_000 &&
+        c.liq   >= 10_000 &&
+        c.ageH  <= 72     &&
+        (c.vol24 >= 10_000 || c.ch24 > 20)
+      );
+    }
+
+    return this.sort(res, f.sort);
+  },
+
+  sort(arr, by) {
+    return [...arr].sort((a, b) => {
+      switch (by) {
+        case 'score':    return (b._score||0)   - (a._score||0);
+        case 'volume':   return b.vol24          - a.vol24;
+        case 'age':      return a.ageH           - b.ageH;
+        case 'mcap':     return a.mcap           - b.mcap;
+        case 'change':   return b.ch24           - a.ch24;
+        default:         return 0;
+      }
+    });
+  },
+};
+
+/* ============================================================
+   RENDER HELPERS
+   ============================================================ */
+const R = {
+
+  esc(s) {
+    return String(s||'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+      .replace(/'/g,'&#039;');
+  },
+
+  fmtPrice(p) {
+    if (!p || p === 0) return '0.00';
+    if (p >= 1)    return p.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:4 });
+    if (p >= 0.01) return p.toFixed(4);
+    if (p >= 0.0001) return p.toFixed(6);
+    /* handle sub-0.0001 prices like 0.000000023 */
+    const s = p.toFixed(18);
+    const m = s.match(/^0\.(0*)/);
+    const z = m ? m[1].length : 0;
+    const sig = p.toFixed(z + 4).replace('0.', '').replace(/^0+/, '').slice(0, 4);
+    return `0.${'0'.repeat(z)}${sig}`;
+  },
+
+  fmtK(n) {
+    if (!n || n === 0) return '0';
+    if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+    return n.toFixed(0);
+  },
+
+  fmtAge(h) {
+    if (h < 1/60)  return '< 1m';
+    if (h < 1)     return `${Math.round(h*60)}m`;
+    if (h < 24)    return `${h.toFixed(1)}h`;
+    const d = Math.floor(h/24);
+    const rem = Math.round(h%24);
+    return rem ? `${d}d ${rem}h` : `${d}d`;
+  },
+
+  chainClass(chain) {
+    return { solana:'cb-solana', ethereum:'cb-ethereum', base:'cb-base', bsc:'cb-bsc' }[chain] || 'cb-other';
+  },
+
+  shortAddr(addr) {
+    if (!addr) return 'N/A';
+    return addr.slice(0,6)+'…'+addr.slice(-4);
+  },
+
+  /* ---- Filter panel HTML ---- */
+  filterPanel() {
+    const f = S.filters;
+    const fb = (key, val, label) =>
+      `<button class="fbtn ${f[key]===val?'active':''}" onclick="App.setFilter('${key}','${val}')">
+        <span class="dot"></span>${label}</button>`;
+
+    const chains = ['solana','ethereum','base','bsc'];
+
+    return `
+    <div class="moonshot-wrap">
+      <button class="moonshot-btn ${f.moonshot?'active':''}" onclick="App.toggleMoonshot()">
+        <span class="moon-icon">🔥</span>
+        <div class="moon-text">
+          <div class="moon-label">POTENTIAL MOONSHOTS</div>
+          <div class="moon-desc">Low cap · High vol · New launch</div>
+        </div>
+        <div class="sw"></div>
+      </button>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">⬡ Sort By</div>
+      <select class="sort-sel" onchange="App.setSort(this.value)">
+        <option value="score"  ${f.sort==='score' ?'selected':''}>🚀 Meme Score</option>
+        <option value="volume" ${f.sort==='volume'?'selected':''}>📊 Volume 24h</option>
+        <option value="age"    ${f.sort==='age'   ?'selected':''}>⏱ Newest First</option>
+        <option value="mcap"   ${f.sort==='mcap'  ?'selected':''}>💰 Market Cap (Low→High)</option>
+        <option value="change" ${f.sort==='change'?'selected':''}>📈 Price Change</option>
+      </select>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">$ Market Cap</div>
+      <div class="fgroup">
+        ${fb('marketCap','u100k','Under $100k')}
+        ${fb('marketCap','u500k','Under $500k')}
+        ${fb('marketCap','u1m',  'Under $1M')}
+      </div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">💧 Liquidity</div>
+      <div class="fgroup">
+        ${fb('liquidity','10k','$10k+')}
+        ${fb('liquidity','50k','$50k+')}
+        ${fb('liquidity','100k','$100k+')}
+      </div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">⏱ Token Age</div>
+      <div class="fgroup">
+        ${fb('age','1h', 'Under 1 hour')}
+        ${fb('age','24h','Under 24 hours')}
+        ${fb('age','7d', 'Under 7 days')}
+      </div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">📊 Volume 24h</div>
+      <div class="fgroup">
+        ${fb('volume','10k', '$10k+')}
+        ${fb('volume','50k', '$50k+')}
+        ${fb('volume','100k','$100k+')}
+      </div>
+    </div>
+
+    <div class="fsect">
+      <div class="fsect-title">🔗 Chain</div>
+      <div class="chain-pills">
+        ${chains.map(ch => `
+          <button class="chain-pill ${f.chains.has(ch)?'active':''}" onclick="App.toggleChain('${ch}')">
+            ${ch==='solana'?'◎':ch==='ethereum'?'Ξ':ch==='base'?'⬡':ch==='bsc'?'⬡':''} ${ch.toUpperCase()}
+          </button>`).join('')}
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="App.resetFilters()">✕ CLEAR ALL FILTERS</button>
+    `;
+  },
+
+  /* ---- Single coin card ---- */
+  card(c) {
+    const sc  = c._score || 0;
+    const lbl = Score.label(sc);
+    const sigs = c._sigs || [];
+    const cc  = this.chainClass(c.chain);
+
+    const pStr = this.fmtPrice(c.price);
+    const chStr = c.ch24.toFixed(1);
+    const chCls = c.ch24 >= 0 ? 'up' : 'down';
+    const chPfx = c.ch24 >= 0 ? '+' : '';
+
+    const liqCls = c.liq >= 50_000 ? 'g' : c.liq >= 10_000 ? 'a' : 'r';
+
+    const logo = c.logo
+      ? `<img src="${this.esc(c.logo)}" alt="${this.esc(c.sym)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        + `<span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;">${this.esc(c.sym.charAt(0))}</span>`
+      : `<span>${this.esc(c.sym.charAt(0))}</span>`;
+
+    return `
+    <div class="coin-card">
+      <!-- TOP ROW -->
+      <div class="card-top">
+        <div class="token-logo">${logo}</div>
+        <div class="token-id">
+          <div class="token-name">${this.esc(c.name)}</div>
+          <div class="token-sym">$${this.esc(c.sym)}</div>
+        </div>
+        <div class="card-badges">
+          <span class="chain-badge ${cc}">${c.chain.toUpperCase()}</span>
+          ${c.boosted ? `<span class="boost-badge">⚡ BOOST</span>` : ''}
+        </div>
+      </div>
+
+      <!-- PRICE ROW -->
+      <div class="price-row">
+        <div>
+          <div class="price-main">$${pStr}</div>
+          <div class="price-change ${chCls}">${chPfx}${chStr}% 24h</div>
+        </div>
+        <div class="age-label">⏱ ${this.fmtAge(c.ageH)}</div>
+      </div>
+
+      <!-- METRICS -->
+      <div class="metrics">
+        <div class="metric">
+          <div class="mlbl">Market Cap</div>
+          <div class="mval a">$${this.fmtK(c.mcap)}</div>
+        </div>
+        <div class="metric">
+          <div class="mlbl">Liquidity</div>
+          <div class="mval ${liqCls}">$${this.fmtK(c.liq)}</div>
+        </div>
+        <div class="metric">
+          <div class="mlbl">Volume 24h</div>
+          <div class="mval g">$${this.fmtK(c.vol24)}</div>
+        </div>
+        <div class="metric">
+          <div class="mlbl">Txns 24h</div>
+          <div class="mval">${this.fmtK(c.txns24)}</div>
+        </div>
+      </div>
+
+      <!-- SIGNALS -->
+      <div class="signals">
+        ${sigs.map(s => `<span class="sig sig-${s.t}">${s.text}</span>`).join('')}
+      </div>
+
+      <!-- MEME SCORE -->
+      <div class="score-wrap">
+        <div class="score-top">
+          <span class="score-lbl">🚀 Meme Score</span>
+          <span class="score-num" style="color:${lbl.color}">${sc}<span class="denom">/100</span></span>
+        </div>
+        <div class="score-bar">
+          <div class="score-fill ${lbl.cls}" style="width:${sc}%"></div>
+        </div>
+        <div class="score-tag" style="color:${lbl.color}; margin-top:5px;">${lbl.text}</div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="card-actions">
+        <a class="act-btn" href="${this.esc(c.dexUrl)}" target="_blank" rel="noopener">
+          📈 CHART
+        </a>
+        <a class="act-btn" href="${this.esc(c.dexUrl)}" target="_blank" rel="noopener">
+          ↗ DEX
+        </a>
+        <button class="act-btn copy" onclick="App.copy('${this.esc(c.addr)}',this)">
+          ⧉ ${this.shortAddr(c.addr)}
+        </button>
+      </div>
+    </div>`;
+  },
+
+  /* ---- Grid of cards ---- */
+  grid(coins) {
+    if (!coins.length) return `
+      <div class="state-box">
+        <div class="empty-icon">◈</div>
+        <p>NO COINS MATCH FILTERS</p>
+        <div class="sub">Adjust your filter settings or scan again</div>
+      </div>`;
+    return `<div class="coins-grid">${coins.map(c => this.card(c)).join('')}</div>`;
+  },
+};
+
+/* ============================================================
+   APP CONTROLLER
+   ============================================================ */
+const App = {
+
+  async init() {
+    this._renderFilters();
+    this._bindSearch();
+    await this.refresh();
+  },
+
+  /* -- REFRESH ------------------------------------------------ */
+  async refresh() {
+    if (S.loading) return;
+    S.loading = true;
+
+    const btn = document.getElementById('refreshBtn');
+    btn?.classList.add('is-spinning');
+    document.getElementById('refreshLabel').textContent = 'SCANNING…';
+
+    document.getElementById('coinsOut').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <p>SCANNING MEMECOIN MARKETS</p>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="sub">Fetching live data from DexScreener…</div>
+      </div>`;
+
+    try {
+      const raw = await API.fetchAll();
+
+      /* Enrich with scores + signals */
+      S.all = raw.map(c => ({
+        ...c,
+        _score: Score.calc(c),
+        _sigs:  Score.signals(c),
+      }));
+
+      S.lastScan = new Date();
+      this._update();
+      this._toast(`✓ Loaded ${S.all.length} live meme coins`, 'ok');
+    } catch (err) {
+      console.error('[App] refresh error:', err);
+      document.getElementById('coinsOut').innerHTML = `
+        <div class="state-box">
+          <div style="font-size:36px; color:var(--red-1)">⚠</div>
+          <p style="color:var(--red-1)">DATA FETCH FAILED</p>
+          <div class="sub">DexScreener API may be rate-limiting. Try again in 30s.</div>
+        </div>`;
+      this._toast('Failed to fetch — try again shortly', 'err');
+    } finally {
+      S.loading = false;
+      btn?.classList.remove('is-spinning');
+      document.getElementById('refreshLabel').textContent = 'SCAN';
+    }
+  },
+
+  /* -- INTERNAL UPDATE --------------------------------------- */
+  _update() {
+    S.filtered = Filter.apply(S.all);
+
+    const trending = Filter.sort(
+      [...S.all].sort((a,b) => b.vol24 - a.vol24).slice(0, 15),
+      S.filters.sort
+    );
+    const newLaunches = Filter.sort(
+      S.all.filter(c => c.ageH <= 12).sort((a,b) => a.ageH - b.ageH),
+      S.filters.sort
+    );
+
+    /* Stats */
+    const topScore = S.all.length ? Math.max(...S.all.map(c => c._score||0)) : 0;
+    document.getElementById('stCoins').textContent = S.filtered.length;
+    document.getElementById('stTrend').textContent = trending.length;
+    document.getElementById('stNew').textContent   = newLaunches.length;
+    document.getElementById('stTop').textContent   = topScore;
+    document.getElementById('tcAll').textContent   = S.filtered.length;
+    document.getElementById('tcTrend').textContent = trending.length;
+    document.getElementById('tcNew').textContent   = newLaunches.length;
+    document.getElementById('navCount').textContent = S.all.length + ' TOKENS';
+    if (S.lastScan) document.getElementById('navTime').textContent = S.lastScan.toLocaleTimeString();
+
+    /* Render tab */
+    const display =
+      S.tab === 'trending' ? Filter.apply(trending) :
+      S.tab === 'new'      ? Filter.apply(newLaunches) :
+      S.filtered;
+
+    document.getElementById('coinsOut').innerHTML = R.grid(display);
+  },
+
+  /* -- FILTER ACTIONS --------------------------------------- */
+  setFilter(key, val) {
+    S.filters[key] = S.filters[key] === val ? null : val;
+    this._renderFilters();
+    this._update();
+  },
+  toggleChain(ch) {
+    S.filters.chains.has(ch) ? S.filters.chains.delete(ch) : S.filters.chains.add(ch);
+    this._renderFilters();
+    this._update();
+  },
+  toggleMoonshot() {
+    S.filters.moonshot = !S.filters.moonshot;
+    this._renderFilters();
+    this._update();
+  },
+  setSort(val) {
+    S.filters.sort = val;
+    this._update();
+  },
+  resetFilters() {
+    Object.assign(S.filters, {
+      marketCap: null, liquidity: null, age: null,
+      volume: null, chains: new Set(), moonshot: false, sort: 'score',
+    });
+    this._renderFilters();
+    this._update();
+    this._toast('Filters cleared', 'ok');
+  },
+
+  /* -- TAB -------------------------------------------------- */
+  setTab(tab) {
+    S.tab = tab;
+    document.querySelectorAll('.tab').forEach(b =>
+      b.classList.toggle('active', b.dataset.tab === tab));
+    this._update();
+  },
+
+  /* -- MOBILE FILTER ACCORDION ------------------------------ */
+  toggleMobile() {
+    const sb = document.getElementById('mobileSidebar');
+    const tb = document.getElementById('mobileToggle');
+    const open = sb.classList.toggle('open');
+    tb.classList.toggle('open', open);
+  },
+
+  /* -- COPY ADDRESS ----------------------------------------- */
+  copy(addr, btn) {
+    if (!addr || addr === 'N/A') return;
+    const orig = btn.innerHTML;
+    navigator.clipboard.writeText(addr).then(() => {
+      btn.classList.add('copied');
+      btn.textContent = '✓ COPIED!';
+      setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+    }).catch(() => {
+      /* fallback for older browsers */
+      const ta = document.createElement('textarea');
+      ta.value = addr; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      this._toast('Address copied!', 'ok');
+    });
+  },
+
+  /* -- INTERNALS -------------------------------------------- */
+  _renderFilters() {
+    const html = R.filterPanel();
+    const ds = document.getElementById('desktopSidebar');
+    const ms = document.getElementById('mobileSidebarInner');
+    if (ds) ds.innerHTML = html;
+    if (ms) ms.innerHTML = html;
+  },
+
+  _bindSearch() {
+    let t;
+    document.getElementById('searchInput')?.addEventListener('input', e => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        S.filters.query = e.target.value.trim();
+        this._update();
+      }, 220);
+    });
+  },
+
+  _toast(msg, type='ok') {
+    const el = document.createElement('div');
+    el.className = `toast ${type === 'err' ? 'err' : type === 'warn' ? 'warn' : ''}`;
+    el.textContent = msg;
+    document.getElementById('toasts').appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  },
+};
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+
+</body>
+</html>
